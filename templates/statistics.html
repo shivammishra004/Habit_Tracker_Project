@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Statistics — Habitgrid{% endblock %}
+{% block header %}Statistics{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Statistics</h1>
+    <p class="page-sub">The full picture, across every habit.</p>
+  </div>
+</div>
+
+<section class="stat-row">
+  <div class="stat-block">
+    <p class="stat-label">Total habits</p>
+    <p class="stat-value">{{ total_habits }}</p>
+  </div>
+  <div class="stat-block">
+    <p class="stat-label">Total completions</p>
+    <p class="stat-value">{{ total_completions_all }}</p>
+  </div>
+  <div class="stat-block">
+    <p class="stat-label">🏆 Best streak overall</p>
+    <p class="stat-value-small">
+      {% if best_overall.name %}{{ best_overall.streak }} days — {{ best_overall.name }}{% else %}—{% endif %}
+    </p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>Activity, last 365 days</h2></div>
+  {% include "_heatmap.html" %}
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head"><h2>Last 7 days</h2></div>
+    <canvas id="weekChart" height="120"></canvas>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Completions by category</h2></div>
+    <canvas id="categoryChart" height="120"></canvas>
+  </section>
+</div>
+
+<section class="panel">
+  <div class="panel-head"><h2>Per-habit breakdown</h2></div>
+  {% if not stats %}
+    <div class="empty-state"><p>No habits yet.</p></div>
+  {% else %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Habit</th>
+          <th>Category</th>
+          <th>Current streak</th>
+          <th>Best streak</th>
+          <th>Total done</th>
+          <th>Completion rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stats %}
+        <tr>
+          <td><a href="{{ url_for('habit_detail', habit_id=s.habit['id']) }}">{{ s.habit['name'] }}</a></td>
+          <td><span class="tag tag-{{ s.habit['category']|lower }}">{{ s.habit['category'] }}</span></td>
+          <td>🔥 {{ s.current_streak }}</td>
+          <td>🏆 {{ s.best_streak }}</td>
+          <td>{{ s.total_completions }}</td>
+          <td>
+            <div class="rate-bar"><div class="rate-fill" style="width: {{ s.completion_rate }}%"></div></div>
+            <span class="rate-label">{{ s.completion_rate }}%</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('weekChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ week_labels|tojson }},
+    datasets: [{
+      data: {{ week_values|tojson }},
+      backgroundColor: '#52796F',
+      borderRadius: 6,
+      maxBarThickness: 36
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#EDEAE0' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('categoryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: {{ category_totals.keys()|list|tojson }},
+    datasets: [{
+      data: {{ category_totals.values()|list|tojson }},
+      backgroundColor: ['#1B4332', '#52796F', '#E3A72B', '#84A98C', '#B08968', '#6E7A73']
+    }]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Inter' } } } }
+  }
+});
+</script>
+{% endblock %}

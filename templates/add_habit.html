@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}New habit — Habitgrid{% endblock %}
+{% block header %}New habit{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="panel form-panel">
+    <div class="panel-head">
+      <h2>Add a new habit</h2>
+      <p class="page-sub">What do you want to show up for, every day?</p>
+    </div>
+
+    <form method="POST" class="stack-form">
+      <label for="name">Habit name</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Gym, Reading, Coding" value="{{ form.name or '' }}" required autofocus>
+
+      <label for="category">Category</label>
+      <select id="category" name="category">
+        {% for c in categories %}
+          <option value="{{ c }}" {% if form.category == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Daily goal time</label>
+      <div class="time-row">
+        <div>
+          <input type="number" name="goal_hours" min="0" max="23" value="{{ form.goal_hours or 0 }}">
+          <span class="time-unit">hours</span>
+        </div>
+        <div>
+          <input type="number" name="goal_minutes" min="0" max="59" value="{{ form.goal_minutes or 0 }}">
+          <span class="time-unit">minutes</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Add habit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

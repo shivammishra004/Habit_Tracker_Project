@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Habitgrid{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Good to see you, {{ current_user['username'] }}</h1>
+    <p class="page-sub">Here's where things stand today.</p>
+  </div>
+  <a href="{{ url_for('add_habit') }}" class="btn btn-primary">+ New habit</a>
+</div>
+
+<section class="stat-row">
+  <div class="stat-block ring-block">
+    <div class="progress-ring" style="--pct: {{ progress_pct }}">
+      <span class="ring-num">{{ progress_pct }}%</span>
+    </div>
+    <div>
+      <p class="stat-label">Today's progress</p>
+      <p class="stat-value-small">{{ completed_today }} of {{ total_habits }} habits done</p>
+    </div>
+  </div>
+
+  <div class="stat-block">
+    <p class="stat-label">Active habits</p>
+    <p class="stat-value">{{ total_habits }}</p>
+  </div>
+
+  <div class="stat-block">
+    <p class="stat-label">Completed today</p>
+    <p class="stat-value">❤️ {{ completed_today }}</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Your habits</h2>
+  </div>
+
+  {% if not habit_data %}
+    <div class="empty-state">
+      <p>No habits yet.</p>
+      <a href="{{ url_for('add_habit') }}" class="btn btn-primary">Add your first habit</a>
+    </div>
+  {% else %}
+    <div class="habit-list">
+      {% for item in habit_data %}
+        <div class="habit-card {% if item.done_today %}is-done{% endif %}">
+          <button class="check-btn" data-habit-id="{{ item.habit['id'] }}" aria-label="Toggle done today">
+            <span class="check-mark">✓</span>
+          </button>
+
+          <div class="habit-info">
+            <a href="{{ url_for('habit_detail', habit_id=item.habit['id']) }}" class="habit-name">{{ item.habit['name'] }}</a>
+            <div class="habit-meta">
+              <span class="tag tag-{{ item.habit['category']|lower }}">{{ item.habit['category'] }}</span>
+              {% if item.habit['goal_hours'] or item.habit['goal_minutes'] %}
+                <span class="meta-item">⏱ {{ item.habit['goal_hours'] }}h {{ item.habit['goal_minutes'] }}m goal</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="habit-streaks">
+            <span class="streak-pill">🔥 <b>{{ item.current_streak }}</b> current</span>
+            <span class="streak-pill best">🏆 <b>{{ item.best_streak }}</b> best</span>
+          </div>
+
+          <div class="habit-actions">
+            <a href="{{ url_for('edit_habit', habit_id=item.habit['id']) }}" class="icon-link" title="Edit">✏️</a>
+            <form method="POST" action="{{ url_for('delete_habit', habit_id=item.habit['id']) }}" onsubmit="return confirm('Delete this habit? This cannot be undone.');">
+              <button type="submit" class="icon-link danger" title="Delete">🗑️</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Activity, last 365 days</h2>
+  </div>
+  {% include "_heatmap.html" %}
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Last 7 days</h2>
+  </div>
+  <canvas id="weekChart" height="90"></canvas>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+// Toggle habit complete/uncomplete
+document.querySelectorAll('.check-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.habitId;
+    const res = await fetch(`/habit/${id}/toggle`, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    if (data.error) return;
+    location.reload();
+  });
+});
+
+const ctx = document.getElementById('weekChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ week_labels|tojson }},
+    datasets: [{
+      label: 'Habits completed',
+      data: {{ week_values|tojson }},
+      backgroundColor: '#52796F',
+      borderRadius: 6,
+      maxBarThickness: 36
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#EDEAE0' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

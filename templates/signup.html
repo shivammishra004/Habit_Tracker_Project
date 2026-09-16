@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Sign up — Habitgrid{% endblock %}
+{% block auth_content %}
+<div class="auth-wrap">
+  <div class="auth-panel">
+    <div class="auth-brand">
+      <span class="brand-mark large">◈</span>
+      <h1>Habitgrid</h1>
+      <p>Every day you show up turns a square green.</p>
+    </div>
+
+    <div class="auth-card">
+      <h2>Create your account</h2>
+      <p class="auth-sub">Takes less than a minute.</p>
+
+      <form method="POST" class="auth-form">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" value="{{ username or '' }}" required autofocus>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="6">
+
+        <label for="confirm_password">Confirm password</label>
+        <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+      </form>
+
+      <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

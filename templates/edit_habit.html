@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Edit habit — Habitgrid{% endblock %}
+{% block header %}Edit habit{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="panel form-panel">
+    <div class="panel-head">
+      <h2>Edit "{{ habit['name'] }}"</h2>
+    </div>
+
+    <form method="POST" class="stack-form">
+      <label for="name">Habit name</label>
+      <input type="text" id="name" name="name" value="{{ habit['name'] }}" required autofocus>
+
+      <label for="category">Category</label>
+      <select id="category" name="category">
+        {% for c in categories %}
+          <option value="{{ c }}" {% if habit['category'] == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Daily goal time</label>
+      <div class="time-row">
+        <div>
+          <input type="number" name="goal_hours" min="0" max="23" value="{{ habit['goal_hours'] }}">
+          <span class="time-unit">hours</span>
+        </div>
+        <div>
+          <input type="number" name="goal_minutes" min="0" max="59" value="{{ habit['goal_minutes'] }}">
+          <span class="time-unit">minutes</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

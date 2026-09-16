@@ -1,0 +1,34 @@
+<div class="heatmap-wrap">
+  <div class="heatmap-months">
+    {% for m in month_labels %}
+      <span class="heatmap-month" style="grid-column: {{ m.col + 1 }}">{{ m.label }}</span>
+    {% endfor %}
+  </div>
+  <div class="heatmap-body">
+    <div class="heatmap-daylabels">
+      <span>Sun</span><span></span><span>Tue</span><span></span><span>Thu</span><span></span><span>Sat</span>
+    </div>
+    <div class="heatmap-grid">
+      {% for week in weeks %}
+        <div class="heatmap-col">
+          {% for day in week %}
+            {% if day %}
+              <span class="heat-cell level-{{ day.level }}" title="{{ day.date }} — {{ day.count }} completed"></span>
+            {% else %}
+              <span class="heat-cell empty"></span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="heatmap-legend">
+    <span>Less</span>
+    <span class="heat-cell level-0"></span>
+    <span class="heat-cell level-1"></span>
+    <span class="heat-cell level-2"></span>
+    <span class="heat-cell level-3"></span>
+    <span class="heat-cell level-4"></span>
+    <span>More</span>
+  </div>
+</div>
